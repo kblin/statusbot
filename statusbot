@@ -13,6 +13,7 @@ Available commands are:
     auth: Authenticate with Twitter
     list: List authenticated users
     post: Post a tweet to Twitter
+    set : Set the default user
 """
 
 headers = {'User-Agent': 'StatusBot Tweeter'}
@@ -27,7 +28,7 @@ def load_config(filelist=None):
 
     return config
 
-def write_config(filename=None):
+def write_config(config, filename=None):
     "Write configuration to configfile"
     if filename is None:
         filename = path.expanduser(CONFIGFILE)
@@ -37,10 +38,14 @@ def write_config(filename=None):
 
 def list_users(config):
     "List authenticated users"
+    user = config.get('global', 'user')
     for section in config.sections():
         if section == "global":
             continue
-        print section
+        elif section == user:
+            print "%s (default)" % section
+        else:
+            print section
 
 def post(config, message):
     "Post a status to Twitter"
@@ -60,6 +65,44 @@ def post(config, message):
 
     twitter.updateStatus(status = message)
 
+def auth(config):
+    "Authenticate a user"
+    consumer_key = config.get('global', 'consumer_key')
+    consumer_secret = config.get('global', 'consumer_secret')
+
+    twitter = Twython(twitter_token  = consumer_key,
+                      twitter_secret = consumer_secret,
+                      headers = headers)
+
+    auth_props = twitter.get_authentication_tokens()
+    print "Please go to %r to confirm the auth, then press return." % \
+            auth_props['auth_url']
+    raw_input()
+
+    twitter = Twython(twitter_token  = consumer_key,
+                      twitter_secret = consumer_secret,
+                      oauth_token = auth_props['oauth_token'],
+                      oauth_token_secret = auth_props['oauth_token_secret'],
+                      headers = headers)
+
+    auth_tokens = twitter.get_authorized_tokens()
+
+    config.add_section(auth_tokens['screen_name'])
+    config.set(auth_tokens['screen_name'], 'oauth_token',
+               auth_tokens['oauth_token'])
+    config.set(auth_tokens['screen_name'], 'oauth_token_secret',
+               auth_tokens['oauth_token_secret'])
+    write_config(config)
+
+def set_default_user(config, user):
+    "Set the default user"
+    if not config.has_section(user):
+        print "No authenticated user %s"
+        return
+
+    config.set('global', 'user', user)
+    write_config(config)
+
 def main():
     """Run the statusbot program"""
     if len(sys.argv) < 2:
@@ -70,7 +113,7 @@ def main():
     command = sys.argv[1].lower()
 
     if command == "auth":
-        raise NotImplementedError
+        auth(config)
     elif command == "post":
         message = " ".join(sys.argv[2:])
         if len(message) > 140:
@@ -79,6 +122,11 @@ def main():
         post(config, message)
     elif command == "list":
         list_users(config)
+    elif command == "set":
+        set_default_user(config, sys.argv[2])
+    else:
+        print >>sys.stderr, USAGE % sys.argv[0]
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
