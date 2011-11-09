@@ -11,6 +11,7 @@ USAGE = """Usage: %s <command>
 
 Available commands are:
     auth: Authenticate with Twitter
+    home: Get the user's timeline (home page)
     list: List authenticated users
     post: Post a tweet to Twitter
     set : Set the default user
@@ -103,6 +104,25 @@ def set_default_user(config, user):
     config.set('global', 'user', user)
     write_config(config)
 
+def home(config):
+    "Get user's tweets"
+    user = config.get('global', 'user')
+    consumer_key = config.get('global', 'consumer_key')
+    consumer_secret = config.get('global', 'consumer_secret')
+
+    oauth_token = config.get(user, 'oauth_token')
+    oauth_token_secret = config.get(user, 'oauth_token_secret')
+
+    twitter = Twython(twitter_token  = consumer_key,
+                      twitter_secret = consumer_secret,
+                      oauth_token = oauth_token,
+                      oauth_token_secret = oauth_token_secret,
+                      headers = headers)
+
+    tweets = twitter.getUserTimeline(screen_name=user)
+    for tweet in tweets:
+        print "%s: %s" % (tweet['user']['screen_name'], tweet['text'])
+
 def main():
     """Run the statusbot program"""
     if len(sys.argv) < 2:
@@ -124,6 +144,8 @@ def main():
         list_users(config)
     elif command == "set":
         set_default_user(config, sys.argv[2])
+    elif command == "home":
+        home(config)
     else:
         print >>sys.stderr, USAGE % sys.argv[0]
         sys.exit(1)
