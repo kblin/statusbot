@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import sys
+import ConfigParser
+from os import path
+from twython import Twython
+
+CONFIGFILE = "~/.statusbotrc"
+
+USAGE = """Usage: %s <command>
+
+Available commands are:
+    auth: Authenticate with Twitter
+    list: List authenticated users
+    post: Post a tweet to Twitter
+"""
+
+headers = {'User-Agent': 'StatusBot Tweeter'}
+
+def load_config(filelist=None):
+    "Load config from list of config files"
+    if filelist is None:
+        filelist = [path.expanduser(CONFIGFILE)]
+
+    config = ConfigParser.ConfigParser()
+    config.read(filelist)
+
+    return config
+
+def write_config(filename=None):
+    "Write configuration to configfile"
+    if filename is None:
+        filename = path.expanduser(CONFIGFILE)
+
+    with open(filename, 'w') as configfile:
+        config.write(configfile)
+
+def list_users(config):
+    "List authenticated users"
+    for section in config.sections():
+        if section == "global":
+            continue
+        print section
+
+def post(config, message):
+    "Post a status to Twitter"
+    user = config.get('global', 'user')
+    consumer_key = config.get('global', 'consumer_key')
+    consumer_secret = config.get('global', 'consumer_secret')
+
+    oauth_token = config.get(user, 'oauth_token')
+    oauth_token_secret = config.get(user, 'oauth_token_secret')
+
+    twitter = Twython(twitter_token  = consumer_key,
+                      twitter_secret = consumer_secret,
+                      oauth_token = oauth_token,
+                      oauth_token_secret = oauth_token_secret,
+                      headers = headers
+                      )
+
+    twitter.updateStatus(status = message)
+
+def main():
+    """Run the statusbot program"""
+    if len(sys.argv) < 2:
+        print >>sys.stderr, USAGE % sys.argv[0]
+        sys.exit(1)
+
+    config = load_config()
+    command = sys.argv[1].lower()
+
+    if command == "auth":
+        raise NotImplementedError
+    elif command == "post":
+        message = " ".join(sys.argv[2:])
+        if len(message) > 140:
+            print >>sys.stderr, "Message too long, can send %r" % message[:141]
+            sys.exit(1)
+        post(config, message)
+    elif command == "list":
+        list_users(config)
+
+if __name__ == "__main__":
+    main()
