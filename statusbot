@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# set fileencoding=utf-8 sts=4 sw=4 et
+# Copyright (C) 2011-2013 Kai Blin <kai@samba.org>
+# Licensed under the GNU GPLv3+, see LICENSE for details
 
 import sys
 import ConfigParser
