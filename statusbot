@@ -18,6 +18,8 @@ Available commands are:
     list: List authenticated users
     post: Post a tweet to Twitter
     set : Set the default user
+
+Version: 0.1.0
 """
 
 headers = {'User-Agent': 'StatusBot Tweeter'}
