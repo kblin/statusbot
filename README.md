@@ -8,7 +8,7 @@ Installation
 ------------
 
 ```statusbot``` should work out of the box, assuming you have the excellent
-[Twython](https://github.com/ryanmcgrath/twython) library installed.
+[Twython 3.0.0](https://github.com/ryanmcgrath/twython) library installed.
 
 Usage
 -----

@@ -19,7 +19,7 @@ Available commands are:
     post: Post a tweet to Twitter
     set : Set the default user
 
-Version: 0.1.0
+Version: 0.1.1
 """
 
 headers = {'User-Agent': 'StatusBot Tweeter'}
@@ -62,34 +62,34 @@ def post(config, message):
     oauth_token = config.get(user, 'oauth_token')
     oauth_token_secret = config.get(user, 'oauth_token_secret')
 
-    twitter = Twython(twitter_token  = consumer_key,
-                      twitter_secret = consumer_secret,
+    twitter = Twython(app_key  = consumer_key,
+                      app_secret = consumer_secret,
                       oauth_token = oauth_token,
                       oauth_token_secret = oauth_token_secret,
-                      headers = headers
+                      client_args = dict(headers=headers)
                       )
 
-    twitter.updateStatus(status = message)
+    twitter.update_status(status = message)
 
 def auth(config):
     "Authenticate a user"
     consumer_key = config.get('global', 'consumer_key')
     consumer_secret = config.get('global', 'consumer_secret')
 
-    twitter = Twython(twitter_token  = consumer_key,
-                      twitter_secret = consumer_secret,
-                      headers = headers)
+    twitter = Twython(app_key  = consumer_key,
+                      app_secret = consumer_secret,
+                      client_args = dict(headers=headers))
 
     auth_props = twitter.get_authentication_tokens()
     print "Please go to %r to confirm the auth, then press return." % \
             auth_props['auth_url']
     raw_input()
 
-    twitter = Twython(twitter_token  = consumer_key,
-                      twitter_secret = consumer_secret,
+    twitter = Twython(app_key  = consumer_key,
+                      app_secret = consumer_secret,
                       oauth_token = auth_props['oauth_token'],
                       oauth_token_secret = auth_props['oauth_token_secret'],
-                      headers = headers)
+                      client_args = dict(headers=headers))
 
     auth_tokens = twitter.get_authorized_tokens()
 
@@ -118,13 +118,13 @@ def home(config):
     oauth_token = config.get(user, 'oauth_token')
     oauth_token_secret = config.get(user, 'oauth_token_secret')
 
-    twitter = Twython(twitter_token  = consumer_key,
-                      twitter_secret = consumer_secret,
+    twitter = Twython(app_key  = consumer_key,
+                      app_secret = consumer_secret,
                       oauth_token = oauth_token,
                       oauth_token_secret = oauth_token_secret,
-                      headers = headers)
+                      client_args = dict(headers=headers))
 
-    tweets = twitter.getUserTimeline(screen_name=user)
+    tweets = twitter.get_home_timeline()
     for tweet in tweets:
         print "%s: %s" % (tweet['user']['screen_name'], tweet['text'])
 
